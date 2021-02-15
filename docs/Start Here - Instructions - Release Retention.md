@@ -17,9 +17,15 @@ But the plot thickens! Some of DevOps Deploys long-time customers are starting t
 
 ## The Pitch
 
-The team at DevOps Deploy has looked into the problems reported by their long-time customers and it turns out customers really only care about releases that have recently been deployed. To free up resources, releases that have not had any recent activity could be deleted without being missed. 
+The team at DevOps Deploy has looked into the problems reported by their long-time customers and it turns out customers really **only care about releases that have recently been deployed**. To free up resources, releases that have **not had any recent activity could be deleted** without being missed. 
 
 So DevOps Deploy has decided to delete old releases, and is calling this cool new feature Release Retention.
+
+### Notes
+
+- Define recent release / old release
+- Identify if a release is to keep or not
+
 
 ## The Task
 
@@ -28,14 +34,35 @@ Your task is to implement Release Retention. Given a set of **projects**, **envi
 The rule for Release Retention:
 > [**Projects**](#project) can have zero or more [**releases**](#release), which can be released to an [**environment**](#environment) by creating a [**deployment**](#deployment). A **release** can have zero or more **deployments** for a **project** and **environment**.  
 > 
-> For each **project**/**environment** combination, keep the n most recently deployed **releases**.
+> **For each project/environment combination, keep the n most recently deployed releases.**
+
+### Notes
+
+- Detail user needs: ***Get my 'n' last releases for projects [o, p, q] for environments [x, y, z ]***
+
+```javascript
+// response could be like
+{ 
+    projs: [{ 
+        projectA: {
+            envs: [{ 
+                envProd: { releases: [r1, r2, ...] }
+                }]
+            }
+    }]
+}
+        
+// process 
+        
+```
 
 Using the languages, tools and frameworks that you are most comfortable with, implement the release retention rule. Your implementation should:
-- Be a reusable and testable component
+
+- **Be a reusable and testable component**
 - Not have a UI or database
-- Take the number to keep as a parameter
-- Return the releases that should be kept
-- Log why a release is kept
+- **Take the number to keep as a parameter**
+- **Return the releases that should be kept**
+- **Log why a release is kept**
 
 You will find JSON files containing sets of projects, environments, releases and deployments that you can use as sample data for the task. The exercise is complete when you are confident that your solution works on the sample data for different values of n. The solution should be to a standard you would be proud to discuss with your peers.
 
@@ -59,4 +86,4 @@ An environment is a collection of the things that get deployed to. It would usua
 
 #### Deployment
 
-A deployment is the way a release of a project ends up in an environment. If we created release 1.0.0 of the Pet Shop project, we could deploy it to the Staging environment. We'll check the deployment and make sure everything is ok, and then create a new deployment of the same release to the Production environment. Every time a release of a project is sent to an environment, a new deployment is created.
+**A deployment is the way a release of a project ends up in an environment**. If we created release 1.0.0 of the Pet Shop project, we could deploy it to the Staging environment. We'll check the deployment and make sure everything is ok, and then create a new deployment of the same release to the Production environment. Every time a release of a project is sent to an environment, a new deployment is created.
