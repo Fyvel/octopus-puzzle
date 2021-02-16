@@ -138,7 +138,8 @@ export default (function ReleaseRetention() {
 			}
 
 			const releasesToKeep = new Map<string, ReleaseDto>()
-
+			
+			console.group('To retain or not to retain')
 			// Loop through existing project/environment
 			// sort releases
 			// keep n releases
@@ -150,11 +151,12 @@ export default (function ReleaseRetention() {
 					.sort(sortByDateDesc)
 					.slice(0, numberOfRelease)
 					.map(x => {
-						console.info(`RELEASE KEPT - Release [${x.ReleaseId}] / Project [${x.ProjectId}] / Environment [${x.EnvironmentId}] / Deployment [${x.DeploymentId}]`)
+						console.info(`+ Keep Release [${x.ReleaseId}] / Project [${x.ProjectId}] / Environment [${x.EnvironmentId}] / Deployment [${x.DeploymentId}]`)
 						releasesToKeep.set(x.ReleaseId, x)
 						return x
 					})
 			})
+			console.groupEnd()
 
 			return {
 				data: releasesToKeep,
