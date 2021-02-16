@@ -1,0 +1,32 @@
+[
+	{
+		"Id": "Deployment-1",
+		"ReleaseId": "Release-1",
+		"EnvironmentId": "Environment-1",
+		"DeployedAt": "2000-01-01T11:00:00"
+	},
+	{
+		"Id": "Deployment-2",
+		"ReleaseId": "Release-1",
+		"EnvironmentId": "Environment-1",
+		"DeployedAt": "2000-01-01T12:00:00"
+	},
+	{
+		"Id": "Deployment-3",
+		"ReleaseId": "Release-1",
+		"EnvironmentId": "Environment-1",
+		"DeployedAt": "2000-01-01T13:00:00"
+	},
+	{
+		"Id": "Deployment-4",
+		"ReleaseId": "Release-1",
+		"EnvironmentId": "Environment-1",
+		"DeployedAt": "2000-01-01T14:00:00"
+	},
+	{
+		"Id": "Deployment-5",
+		"ReleaseId": "Release-1",
+		"EnvironmentId": "Environment-1",
+		"DeployedAt": "2000-01-01T15:00:00"
+	}	
+]

@@ -6,7 +6,8 @@
 	"license": "MIT",
 	"private": true,
 	"scripts": {
-		"start": "ts-node-dev --respawn --transpile-only src/index.ts"
+		"start": "ts-node-dev --respawn --transpile-only src/index.ts",
+		"test": "ts-node-dev --respawn --transpile-only src/index.spec.ts"
 	},
 	"dependencies": {
 		"typescript": "^4.1.5"
