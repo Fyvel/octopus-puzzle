@@ -63,6 +63,7 @@ Using the languages, tools and frameworks that you are most comfortable with, im
 - **Take the number to keep as a parameter**
 - **Return the releases that should be kept**
 - **Log why a release is kept**
+  - matches: project / environment / within nb to keep
 
 You will find JSON files containing sets of projects, environments, releases and deployments that you can use as sample data for the task. The exercise is complete when you are confident that your solution works on the sample data for different values of n. The solution should be to a standard you would be proud to discuss with your peers.
 

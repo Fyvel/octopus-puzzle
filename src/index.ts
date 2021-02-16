@@ -3,8 +3,8 @@
 import ReleaseRetention from './ReleaseRetention'
 import Data from './data'
 
-const numberOfRelease = 2
+const numberOfRelease = 10
 
-const rr = ReleaseRetention(Data).keep(numberOfRelease)
+const releasesKept = ReleaseRetention.Create(Data).Keep(numberOfRelease)
 
-console.log(JSON.stringify(rr, null, 2))
+console.log(JSON.stringify(releasesKept, null, 2))
