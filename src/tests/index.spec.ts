@@ -1,11 +1,18 @@
 'use strict'
 
-import ReleaseRetention from './ReleaseRetention'
-import Data1 from './tests/examples/1'
-import Data2 from './tests/examples/2'
-import Data3 from './tests/examples/3'
+import ReleaseRetention from '../ReleaseRetention'
+import Data1 from './examples/1'
+import Data2 from './examples/2'
+import Data3 from './examples/3'
+import { DataType } from '../types'
 
-const examples = {
+const examples: {
+	[key: number]: DataType & {
+		Expected: {
+			[key: number]: string[]
+		}
+	}
+} = {
 	1: Data1,
 	2: Data2,
 	3: Data3,
@@ -16,7 +23,6 @@ for (const key in examples) {
 		throw new Error('Nope')
 
 	const example = examples[key]
-
 
 	// Arrange
 	const numberOfRelease = 2
@@ -63,4 +69,3 @@ for (const key in examples) {
 
 	console.groupEnd()
 }
-

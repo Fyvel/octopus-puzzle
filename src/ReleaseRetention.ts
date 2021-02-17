@@ -1,47 +1,12 @@
 'use strict'
 
-type Deployment = {
-	Id: string
-	ReleaseId: string
-	EnvironmentId: string
-	DeployedAt: string
-}
-type Environment = {
-	Id: string
-	Name: string
-}
-type Project = {
-	Id: string
-	Name: string
-}
-type Release = {
-	Id: string
-	ProjectId: string
-	Version: string | null
-	Created: string
-}
-type DataType = {
-	Deployments: Deployment[],
-	Environments: Environment[],
-	Projects: Project[],
-	Releases: Release[],
-}
-
-// Dto type to carry needed stuff along the way
-type ReleaseDto = {
-	ReleaseId: string,
-	Created: string,
-	EnvironmentId: string,
-	ProjectId: string,
-	DeploymentId: string,
-	DeployedAt: string,
-}
-
-// Final result type
-type Result = {
-	data: Map<string, ReleaseDto>,
-	toString: () => string
-}
+import {
+	ReleaseDto,
+	DataType,
+	Deployment,
+	Release,
+	Result
+} from "./types"
 
 export default (function ReleaseRetention() {
 	const _projectEnvironmentMap: ProjectEnvironment = new Map()
@@ -138,7 +103,7 @@ export default (function ReleaseRetention() {
 			}
 
 			const releasesToKeep = new Map<string, ReleaseDto>()
-			
+
 			console.group('To retain or not to retain')
 			// Loop through existing project/environment
 			// sort releases
