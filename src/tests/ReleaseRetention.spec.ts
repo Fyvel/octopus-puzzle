@@ -1,7 +1,18 @@
 'use strict'
 
-import ReleaseRetention, { findDeploymentsToProcess, findReleasesToProcess, groupByProjectEnvironment, ProjectEnvironment } from '../ReleaseRetention'
-import { Deployment, Environment, Project, Release } from '../types'
+import ReleaseRetention, {
+	findDeploymentsToProcess,
+	findReleasesToProcess,
+	groupByProjectEnvironment,
+	ProjectEnvironment
+} from '../ReleaseRetention'
+import {
+	Deployment,
+	Environment,
+	Project,
+	Release,
+	Result
+} from '../types'
 
 describe('ReleaseRetention module', () => {
 	test('Should have a factory', () => {
@@ -149,24 +160,219 @@ describe('ReleaseRetention factory', () => {
 
 describe('ReleaseRetention process', () => {
 	test('Should take the number to keep as parameter', () => {
-		// Arrange
+		//#region Arrange
+		const numberAsParam = 42//ReleaseRetention.Keep(new Map())
+		const targetMethod = ReleaseRetention.Keep(new Map())
+		const mock = jest.fn() as jest.MockedFunction<typeof targetMethod>
+		//#endregion
 		// Act
+		mock(numberAsParam)
 		// Assert
-		expect(false).toBe(true)
+		expect(mock).toBeCalledWith(expect.any(Number))
 	})
+
 	test('Should return the releases that should be kept', () => {
-		// Arrange
+		//#region Arrange
+		const projEnvMap = new Map()
+			.set('Project-A_Env-A', {
+				Releases: new Map()
+					.set('R1', {
+						ReleaseId: 'R1',
+						Created: '2021-02-18T09:00:00.000Z',
+						EnvironmentId: 'Env-A',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D4',
+						DeployedAt: '2021-02-18T09:00:00.000Z',
+					})
+					.set('R2', {
+						ReleaseId: 'R2',
+						Created: '2021-02-18T10:00:00.000Z',
+						EnvironmentId: 'Env-A',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D5',
+						DeployedAt: '2021-02-18T10:00:00.000Z',
+					})
+					.set('R3', {
+						ReleaseId: 'R3',
+						Created: '2021-02-18T11:00:00.000Z',
+						EnvironmentId: 'Env-A',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D6',
+						DeployedAt: '2021-02-18T11:00:00.000Z',
+					})
+			})
+			.set('Project-A_Env-B', {
+				Releases: new Map()
+					.set('R4', {
+						ReleaseId: 'R4',
+						Created: '2021-02-18T12:00:00.000Z',
+						EnvironmentId: 'Env-B',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D4',
+						DeployedAt: '2021-02-18T12:00:00.000Z',
+					})
+					.set('R5', {
+						ReleaseId: 'R5',
+						Created: '2021-02-18T13:00:00.000Z',
+						EnvironmentId: 'Env-B',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D5',
+						DeployedAt: '2021-02-18T13:00:00.000Z',
+					})
+			}) as ProjectEnvironment
+		const expected = {
+			data: new Map()
+				.set('R2', {})
+				.set('R3', {})
+				.set('R4', {})
+				.set('R5', {})
+		} as Result
+		const numberOfRelease = 2
+		//#endregion
 		// Act
+		const results = ReleaseRetention.Keep(projEnvMap)(numberOfRelease)
 		// Assert
-		expect(false).toBe(true)
+		expect(results.data.size).toBe(expected.data.size)
+		expect([...results.data.keys()])
+			.toEqual(expect.arrayContaining([...expected.data.keys()]))
+
+	})
+
+	test('Should not retain duplicate releases', () => {
+		//#region Arrange
+		const projEnvMap = new Map()
+			.set('Project-A_Env-A', {
+				Releases: new Map()
+					.set('R1', {
+						ReleaseId: 'R1',
+						Created: '2021-02-18T09:00:00.000Z',
+						EnvironmentId: 'Env-A',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D4',
+						DeployedAt: '2021-02-18T09:00:00.000Z',
+					})
+					.set('R2', {
+						ReleaseId: 'R2',
+						Created: '2021-02-18T10:00:00.000Z',
+						EnvironmentId: 'Env-A',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D5',
+						DeployedAt: '2021-02-18T10:00:00.000Z',
+					})
+			})
+			.set('Project-A_Env-B', {
+				Releases: new Map()
+					.set('R1', {
+						ReleaseId: 'R1',
+						Created: '2021-02-18T09:00:00.000Z',
+						EnvironmentId: 'Env-B',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D6',
+						DeployedAt: '2021-02-18T09:00:00.000Z',
+					})
+					.set('R2', {
+						ReleaseId: 'R2',
+						Created: '2021-02-18T10:00:00.000Z',
+						EnvironmentId: 'Env-B',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D7',
+						DeployedAt: '2021-02-18T10:00:00.000Z',
+					})
+			}) as ProjectEnvironment
+		const expected = {
+			data: new Map()
+				.set('R1', {})
+				.set('R2', {})
+		} as Result
+		const numberOfRelease = 2
+		//#endregion
+		// Act
+		const results = ReleaseRetention.Keep(projEnvMap)(numberOfRelease)
+		// Assert
+		expect(results.data.size).toBe(expected.data.size)
+		expect([...results.data.keys()])
+			.toEqual(expect.arrayContaining([...expected.data.keys()]))
+	})
+
+	test('Should sort releases by creation date descending', () => {
+		//#region Arrange
+		const projEnvMap = new Map()
+			.set('Project-A_Env-B', {
+				Releases: new Map()
+					.set('R-older', {
+						ReleaseId: 'R-older',
+						Created: '2021-02-18T09:00:00.000Z',
+						EnvironmentId: 'Env-B',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D6',
+						DeployedAt: '2021-02-18T09:00:00.000Z',
+					})
+					.set('R-latest', {
+						ReleaseId: 'R-latest',
+						Created: '2021-02-18T10:00:00.000Z',
+						EnvironmentId: 'Env-B',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D7',
+						DeployedAt: '2021-02-18T10:00:00.000Z',
+					})
+			}) as ProjectEnvironment
+		const expected = {
+			data: new Map().set('R-latest', {})
+		} as Result
+		const numberOfRelease = 1
+		//#endregion
+		// Act
+		const results = ReleaseRetention.Keep(projEnvMap)(numberOfRelease)
+		// Assert
+		expect(results.data.size).toBe(expected.data.size)
+		expect([...results.data.keys()])
+			.toEqual(expect.arrayContaining([...expected.data.keys()]))
+	})
+
+	test('Should handle empty Project/Environment Map', () => {
+		// Arrange 
+		const numberOfReleases = 42
+		const emptyMap = new Map()
+		const expected: Result = {
+			data: new Map(),
+			toString: () => ''
+		}
+		// Act
+		const result = ReleaseRetention.Keep(emptyMap)(numberOfReleases)
+		// Assert
+		expect(result.data.size).toBe(expected.data.size)
 	})
 })
 
 describe('ReleaseRetention logging', () => {
 	test('Should log why a release is kept', () => {
 		// Arrange
+		const projEnvMap = new Map()
+			.set('Project-A_Env-B', {
+				Releases: new Map()
+					.set('R1', {
+						ReleaseId: 'R1',
+						Created: '2021-02-18T09:00:00.000Z',
+						EnvironmentId: 'Env-B',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D6',
+						DeployedAt: '2021-02-18T09:00:00.000Z',
+					})
+					.set('R2', {
+						ReleaseId: 'R2',
+						Created: '2021-02-18T10:00:00.000Z',
+						EnvironmentId: 'Env-B',
+						ProjectId: 'Project-A',
+						DeploymentId: 'D7',
+						DeployedAt: '2021-02-18T10:00:00.000Z',
+					})
+			}) as ProjectEnvironment
+		const numberOfRelease = 2
+		const consoleSpy = jest.spyOn(console, 'debug')
+		const expected = numberOfRelease
 		// Act
+		ReleaseRetention.Keep(projEnvMap)(numberOfRelease)
 		// Assert
-		expect(false).toBe(true)
+		expect(consoleSpy).toHaveBeenCalledTimes(expected)
 	})
 })

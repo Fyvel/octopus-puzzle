@@ -7,8 +7,8 @@
 	"private": true,
 	"scripts": {
 		"start": "ts-node-dev --respawn --transpile-only src/index.ts",
-		"test": "ts-node-dev --respawn --transpile-only src/tests/index.spec.ts",
-		"jest": "jest"
+		"test": "jest",
+		"test:coverage": "jest --coverage"
 	},
 	"dependencies": {
 		"typescript": "^4.1.5"

@@ -76,7 +76,7 @@ export default (function ReleaseRetention() {
 		}
 	}
 
-	return { Create }
+	return { Create, Keep }
 })()
 
 export {
