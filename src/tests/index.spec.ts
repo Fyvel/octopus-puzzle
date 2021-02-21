@@ -50,5 +50,6 @@ describe('Integratin tests', () => {
 			expect(results).toEqual(expect.arrayContaining(expected))
 		})
 
-	test.skip.each(datasets.toSkip)(`Example #%i with ${numberOfRelease} release(s) to retain - No test data 🤷‍♂️`, () => { })
+	datasets.toSkip.length &&
+		test.skip.each(datasets.toSkip)(`Example #%i with ${numberOfRelease} release(s) to retain - No test data 🤷‍♂️`, () => { })
 })

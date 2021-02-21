@@ -27,7 +27,7 @@ export type DataType = {
 }
 
 // Dto type to carry needed stuff along the way
-export type ReleaseDto = {
+export type DeploymentRelease = {
 	ReleaseId: string,
 	Created: string,
 	EnvironmentId: string,
@@ -38,6 +38,6 @@ export type ReleaseDto = {
 
 // Final result type
 export type Result = {
-	data: Map<string, ReleaseDto>,
+	data: Map<string, DeploymentRelease>,
 	toString: () => string
 }

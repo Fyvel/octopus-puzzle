@@ -1,7 +1,7 @@
 'use strict'
 
 import {
-	ReleaseDto,
+	DeploymentRelease,
 	DataType,
 	Deployment,
 	Release,
@@ -11,7 +11,7 @@ import {
 } from "./types"
 
 // Type for Project/Environment combinaison
-type ProjectEnvironment = Map<string, { Releases: Map<string, ReleaseDto> }>
+type ProjectEnvironment = Map<string, { Releases: Map<string, DeploymentRelease> }>
 
 export default (function ReleaseRetention() {
 	function Create({
@@ -46,15 +46,14 @@ export default (function ReleaseRetention() {
 					}
 				}
 
-				const releasesToKeep = new Map<string, ReleaseDto>()
+				const releasesToKeep = new Map<string, DeploymentRelease>()
 
-				const sortByDateDesc = (a: { Created: string }, b: { Created: string }) => +new Date(b.Created) - +new Date(a.Created)
+				const sortByDeploymentDateDesc = (a: { DeployedAt: string }, b: { DeployedAt: string }) => +new Date(b.DeployedAt) - +new Date(a.DeployedAt)
 
 				// Loop through existing project/environment
 				projectEnvironmentMap.forEach((values) => {
 					[...values.Releases.values()]
-						// assuming we sort the release by date (if sort by version is needed: yarn add semver)
-						.sort(sortByDateDesc)
+						.sort(sortByDeploymentDateDesc)
 						// keep n releases
 						.slice(0, numberOfRelease)
 						// log them & add them to the result
@@ -117,10 +116,11 @@ const groupByProjectEnvironment = (
 				.filter(deployment => deployment.ReleaseId === curr.Id)
 				.forEach(deployment => {
 					const projEnvKey = `${curr.ProjectId}_${deployment.EnvironmentId}`
+					const deployRelKey = `${deployment.Id}_${deployment.ReleaseId}`
 
 					console.debug(`+ Release [${curr.Id}] added to key [${projEnvKey}]`)
 
-					const releaseDto: ReleaseDto = {
+					const releaseDto: DeploymentRelease = {
 						DeploymentId: deployment.Id,
 						DeployedAt: deployment.DeployedAt,
 						EnvironmentId: deployment.EnvironmentId,
@@ -130,7 +130,7 @@ const groupByProjectEnvironment = (
 					}
 
 					acc.has(projEnvKey)
-						? acc.get(projEnvKey)?.Releases.set(releaseDto.ReleaseId, releaseDto)
+						? acc.get(projEnvKey)?.Releases.set(deployRelKey, releaseDto)
 						: acc.set(projEnvKey, { Releases: new Map().set(releaseDto.ReleaseId, releaseDto) })
 					return
 				})
