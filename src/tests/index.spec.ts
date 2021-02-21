@@ -6,7 +6,7 @@ import Data2 from './examples/2'
 import Data3 from './examples/3'
 import { DataType } from '../types'
 
-const numberOfRelease = 2
+const numberOfRelease = 1
 
 //#region Setup
 const { Expected: ExpectedDataset1, ...Dataset1 } = Data1
