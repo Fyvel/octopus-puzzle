@@ -175,7 +175,7 @@ describe('ReleaseRetention process', () => {
 		//#region Arrange
 		const projEnvMap = new Map()
 			.set('Project-A_Env-A', {
-				Releases: new Map()
+				DeploymentReleases: new Map()
 					.set('R1', {
 						ReleaseId: 'R1',
 						Created: '2021-02-18T09:00:00.000Z',
@@ -202,7 +202,7 @@ describe('ReleaseRetention process', () => {
 					})
 			})
 			.set('Project-A_Env-B', {
-				Releases: new Map()
+				DeploymentReleases: new Map()
 					.set('R4', {
 						ReleaseId: 'R4',
 						Created: '2021-02-18T12:00:00.000Z',
@@ -242,7 +242,7 @@ describe('ReleaseRetention process', () => {
 		//#region Arrange
 		const projEnvMap = new Map()
 			.set('Project-A_Env-A', {
-				Releases: new Map()
+				DeploymentReleases: new Map()
 					.set('R1', {
 						ReleaseId: 'R1',
 						Created: '2021-02-18T09:00:00.000Z',
@@ -261,7 +261,7 @@ describe('ReleaseRetention process', () => {
 					})
 			})
 			.set('Project-A_Env-B', {
-				Releases: new Map()
+				DeploymentReleases: new Map()
 					.set('R1', {
 						ReleaseId: 'R1',
 						Created: '2021-02-18T09:00:00.000Z',
@@ -298,7 +298,7 @@ describe('ReleaseRetention process', () => {
 		//#region Arrange
 		const projEnvMap = new Map()
 			.set('Project-A_Env-B', {
-				Releases: new Map()
+				DeploymentReleases: new Map()
 					.set('R-older', {
 						ReleaseId: 'R-older',
 						Created: '2021-02-18T09:00:00.000Z',
@@ -349,7 +349,7 @@ describe('ReleaseRetention logging', () => {
 		// Arrange
 		const projEnvMap = new Map()
 			.set('Project-A_Env-B', {
-				Releases: new Map()
+				DeploymentReleases: new Map()
 					.set('R1', {
 						ReleaseId: 'R1',
 						Created: '2021-02-18T09:00:00.000Z',

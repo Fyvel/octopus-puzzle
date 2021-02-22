@@ -11,7 +11,7 @@ import {
 } from "./types"
 
 // Type for Project/Environment combinaison
-type ProjectEnvironment = Map<string, { Releases: Map<string, DeploymentRelease> }>
+type ProjectEnvironment = Map<string, { DeploymentReleases: Map<string, DeploymentRelease> }>
 
 export default (function ReleaseRetention() {
 	function Create({
@@ -51,8 +51,9 @@ export default (function ReleaseRetention() {
 				const sortByDeploymentDateDesc = (a: { DeployedAt: string }, b: { DeployedAt: string }) => +new Date(b.DeployedAt) - +new Date(a.DeployedAt)
 
 				// Loop through existing project/environment
+				console.info(projectEnvironmentMap)
 				projectEnvironmentMap.forEach((values) => {
-					[...values.Releases.values()]
+					[...values.DeploymentReleases.values()]
 						.sort(sortByDeploymentDateDesc)
 						// keep n releases
 						.slice(0, numberOfRelease)
@@ -130,8 +131,8 @@ const groupByProjectEnvironment = (
 					}
 
 					acc.has(projEnvKey)
-						? acc.get(projEnvKey)?.Releases.set(deployRelKey, releaseDto)
-						: acc.set(projEnvKey, { Releases: new Map().set(releaseDto.ReleaseId, releaseDto) })
+						? acc.get(projEnvKey)?.DeploymentReleases.set(deployRelKey, releaseDto)
+						: acc.set(projEnvKey, { DeploymentReleases: new Map().set(deployRelKey, releaseDto) })
 					return
 				})
 
