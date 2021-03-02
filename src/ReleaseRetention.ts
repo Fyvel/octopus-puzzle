@@ -1,151 +1,136 @@
 'use strict'
 
 import {
-	DeploymentRelease,
 	DataType,
 	Deployment,
 	Release,
-	Result,
-	Project,
-	Environment
+	Result
 } from "./types"
 
-// Type for Project/Environment combinaison
-type ProjectEnvironment = Map<string, { DeploymentReleases: Map<string, DeploymentRelease> }>
+export default (function () {
+	type ProcessProjectEnvironmentsProps = {
+		projectIds: string[],
+		environmentIds: string[],
+		releases: Release[],
+		deployments: Deployment[],
+	}
+	const _processProjectEnvironments = ({
+		projectIds,
+		environmentIds,
+		releases,
+		deployments,
+	}: ProcessProjectEnvironmentsProps) => projectIds.reduce(
+		(projEnvAcc, proj) => {
+			// get relevant Release Ids
+			const releaseIds = releases
+				.filter(r => r.ProjectId === proj)
+				.map(x => x.Id)
+			// loop through the environments
+			environmentIds.forEach(env => {
+				// create Project/Environment key
+				const key = `${proj}_${env}}`
+				// keep relevant deployments
+				const deploymentsInvolved = deployments
+					.filter(d => d.EnvironmentId === env
+						&& releaseIds.includes(d.ReleaseId))
+					.sort((a, b) => +new Date(b.DeployedAt) - +new Date(a.DeployedAt))
+					.reduce((releaseTracker, depl) => {
+						// skip releases that have been seen already
+						if (releaseTracker.releaseSeen.has(depl.ReleaseId))
+							return releaseTracker
+						// otherwise add it to the tracker
+						releaseTracker.releaseSeen.add(depl.ReleaseId)
+						releaseTracker.deployments.push(depl)
+						return releaseTracker
+					}, {
+						releaseSeen: new Set<string>(),
+						deployments: [] as Deployment[]
+					})
+					.deployments
+				// add remaining deployments to Project/Environment key
+				projEnvAcc.set(key, deploymentsInvolved)
+				return
+			})
+			return projEnvAcc
+		}, new Map<ProjEnvKey, Deployment[]>())
 
-export default (function ReleaseRetention() {
 	function Create({
 		Releases,
 		Deployments,
 		Environments,
 		Projects }: DataType) {
 		try {
-			// filter out unknwon projects from Releases
-			const releasesToProcess = findReleasesToProcess(Releases, Projects, new Set<string>())
+			// get target project Ids
+			const targetProjs = [...Projects.reduce(
+				(acc, curr) => {
+					acc.add(curr.Id)
+					return acc
+				}, new Set<string>())]
+			// get target environment Ids
+			const targetEnvs = [...Environments.reduce(
+				(acc, curr) => {
+					acc.add(curr.Id)
+					return acc
+				}, new Set<string>())]
+			// filter out relevant releases
+			const releases = Releases
+				.filter(r => targetProjs.includes(r.ProjectId))
+			// filter out relevant deployments
+			const deployments = Deployments
+				.filter(d => targetEnvs.includes(d.EnvironmentId))
+			// get Project/Environment pairs
+			const projectEnvironments = _processProjectEnvironments({
+				projectIds: targetProjs,
+				environmentIds: targetEnvs,
+				releases,
+				deployments,
+			})
 
-			// filter out unknown environments from Deployments
-			const deploymentsToProcess = findDeploymentsToProcess(Deployments, Environments, new Set<string>())
-
-			// group by project/environment combinaisons
-			const map = groupByProjectEnvironment(releasesToProcess, deploymentsToProcess, new Map())
-			return { Keep: Keep(map) }
+			return {
+				Keep: (nbOfReleases: number) => KeepFactory({
+					projectEnvironments,
+					nbOfReleases
+				})
+			}
 		} catch (error) {
 			const err = new Error(error)
 			throw err
 		}
 	}
 
-	function Keep(projectEnvironmentMap: ProjectEnvironment) {
-		return (numberOfRelease: number): Result => {
-			try {
-				if (!projectEnvironmentMap.size) {
-					console.debug('No existing Project/Environment combinaison')
-					return {
-						data: new Map(),
-						toString: () => 'No existing Project/Environment combinaison'
-					}
-				}
+	type ProjEnvKey = string
+	type KeepFactoryParams = {
+		projectEnvironments: Map<ProjEnvKey, Deployment[]>,
+		nbOfReleases: number
+	}
 
-				const releasesToKeep = new Map<string, DeploymentRelease>()
+	function KeepFactory({
+		projectEnvironments,
+		nbOfReleases
+	}: KeepFactoryParams): Result {
+		try {
+			const result = new Set<string>()
+			projectEnvironments.forEach(projEnv => {
+				[...projEnv.values()]
+					.slice(0, nbOfReleases)
+					.forEach(deployment => {
+						result.add(deployment.ReleaseId)
+						console.debug(`+ Keep Release [${deployment.ReleaseId}] / Environment [${deployment.EnvironmentId}] / Deployment [${deployment.Id}]`)
+					})
+			})
 
-				const sortByDeploymentDateDesc = (a: { DeployedAt: string }, b: { DeployedAt: string }) => +new Date(b.DeployedAt) - +new Date(a.DeployedAt)
-
-				// Loop through existing project/environment
-				console.info(projectEnvironmentMap)
-				projectEnvironmentMap.forEach((values) => {
-					[...values.DeploymentReleases.values()]
-						.sort(sortByDeploymentDateDesc)
-						// keep n releases
-						.slice(0, numberOfRelease)
-						// log them & add them to the result
-						.map(x => {
-							console.debug(`+ Keep Release [${x.ReleaseId}] / Project [${x.ProjectId}] / Environment [${x.EnvironmentId}] / Deployment [${x.DeploymentId}]`)
-							releasesToKeep.set(x.ReleaseId, x)
-							return x
-						})
-				})
-
-				return {
-					data: releasesToKeep,
-					toString: () => [...releasesToKeep.keys()].join(' - '),
-				}
-			} catch (error) {
-				const err = new Error(error)
-				throw err
+			return {
+				data: result,
+				toString: () => [...result].join(' - ')
 			}
+		} catch (error) {
+			const err = new Error(error)
+			throw err
 		}
 	}
 
-	return { Create, Keep }
+	return {
+		Create,
+		KeepFactory,
+	}
 })()
-
-export {
-	findReleasesToProcess,
-	findDeploymentsToProcess,
-	groupByProjectEnvironment,
-	ProjectEnvironment,
-}
-
-const findReleasesToProcess = (
-	releases: Release[],
-	projects: Project[],
-	currentSet = new Set<string>()) => {
-
-	const projectSet = projects.reduce(_identifierReducer, currentSet)
-	const releasesToProcess = releases.filter(r => projectSet.has(r.ProjectId))
-	return releasesToProcess
-}
-
-const findDeploymentsToProcess = (
-	deployments: Deployment[],
-	environments: Environment[],
-	currentSet = new Set<string>()) => {
-
-	const projectSet = environments.reduce(_identifierReducer, currentSet)
-	const deploymentsToProcess = deployments.filter(d => projectSet.has(d.EnvironmentId))
-	return deploymentsToProcess
-}
-
-const groupByProjectEnvironment = (
-	releases: Release[],
-	deployments: Deployment[],
-	currentMap: ProjectEnvironment = new Map()) => {
-
-	const projectEnvironmentReducer = (deployments: Deployment[]) =>
-		(acc: ProjectEnvironment, curr: Release) => {
-			deployments
-				.filter(deployment => deployment.ReleaseId === curr.Id)
-				.forEach(deployment => {
-					const projEnvKey = `${curr.ProjectId}_${deployment.EnvironmentId}`
-					const deployRelKey = `${deployment.Id}_${deployment.ReleaseId}`
-
-					console.debug(`+ Release [${curr.Id}] added to key [${projEnvKey}]`)
-
-					const releaseDto: DeploymentRelease = {
-						DeploymentId: deployment.Id,
-						DeployedAt: deployment.DeployedAt,
-						EnvironmentId: deployment.EnvironmentId,
-						ProjectId: curr.ProjectId,
-						ReleaseId: curr.Id,
-						Created: curr.Created,
-					}
-
-					acc.has(projEnvKey)
-						? acc.get(projEnvKey)?.DeploymentReleases.set(deployRelKey, releaseDto)
-						: acc.set(projEnvKey, { DeploymentReleases: new Map().set(deployRelKey, releaseDto) })
-					return
-				})
-
-			return acc
-		}
-
-	return releases.reduce(projectEnvironmentReducer(deployments), currentMap)
-}
-
-const _identifierReducer = (
-	acc: Set<string>,
-	curr: { Id: string }) => {
-
-	acc.add(curr.Id)
-	return acc
-}

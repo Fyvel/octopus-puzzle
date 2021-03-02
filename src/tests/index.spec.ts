@@ -4,10 +4,11 @@ import ReleaseRetention from '../ReleaseRetention'
 import Data1 from './examples/1'
 import Data2 from './examples/2'
 import Data3 from './examples/3'
+import Data4 from './examples/4'
 import { DataType } from '../types'
 
 const SCENARIO = [0, 1, 2, 3, 4]
-const DATASET = [Data1, Data2, Data3]
+const DATASET = [Data1, Data2, Data3, Data4]
 
 //#region Setup
 
@@ -39,7 +40,7 @@ describe('Integratin tests', () => {
 			const releasesKept = ReleaseRetention
 				.Create(example)
 				.Keep(numberOfRelease)
-			const results = [...releasesKept.data.values()].map(x => x.ReleaseId)
+			const results = [...releasesKept.data.values()]
 
 			// Assert
 			expect(results.length).toBe(expected.length)

@@ -38,6 +38,6 @@ export type DeploymentRelease = {
 
 // Final result type
 export type Result = {
-	data: Map<string, DeploymentRelease>,
+	data: Set<string>,
 	toString: () => string
 }

@@ -8,6 +8,8 @@
 	"scripts": {
 		"start": "ts-node-dev --respawn --transpile-only src/index.ts",
 		"test": "jest",
+		"test:i": "jest index.spec.ts",
+		"test:u": "jest ReleaseRetention.spec.ts",
 		"test:coverage": "jest --coverage"
 	},
 	"dependencies": {
